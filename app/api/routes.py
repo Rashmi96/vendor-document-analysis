@@ -6,6 +6,8 @@ from app.services.text_extractor import extract_text
 from app.utils.validators import allowed_file
 from app.utils.loggers import log_message
 from flask_restful import Api, Resource
+from app.services.text_extractor import extract
+from app.services.llm_processor import extract_fields_with_llm
 
 main = Blueprint('main', __name__)
 api = Api(main)
@@ -14,24 +16,23 @@ os.environ['WERKZEUG_DEBUG_PIN'] = 'off'
 
 @main.route('/ping', methods=['GET'])
 def get_health():
-    print("Checking the app health")
+    log_message("Checking the app health")
     response_data = {'project': 'You are into Vendor Document Analysis project'}
     return response_data, 200
+
+@main.route('/execute-prompt', methods=['GET'])
+def execute_prompt():
+    log_message("executing the prompt")
+    extract_fields_with_llm()
+    return 200
 
 
 @main.route('/extract', methods=['GET'])
 def extract_file():
-    print("extract request received")
-    extracted_data = {}
-    for filename in os.listdir(Config.UPLOAD_FOLDER):
-        try:
-            file_path = os.path.join(Config.UPLOAD_FOLDER, filename)
-            extracted_data[filename] = extract_text(file_path)
-            log_message(f"Extraction complete for {filename}")
-        except Exception as e:
-            extracted_data[filename] = f"Error extracting from {filename}: {str(e)}"
-    print(extracted_data)
-    return extracted_data
+    try:
+        return extract()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @main.route('/list-files', methods=['GET'])
