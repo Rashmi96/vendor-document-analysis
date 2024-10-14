@@ -5,8 +5,25 @@ import pytesseract
 import fitz
 import os
 from PyPDF2 import PdfReader
+from pathlib import Path
+from app import Config
 
 from app.utils.loggers import log_message
+
+def extract():
+    final_data = []
+    for filename in os.listdir(Config.UPLOAD_FOLDER):
+        try:
+            file_path = os.path.join(Config.UPLOAD_FOLDER, filename)
+            ext = Path(filename).suffix.lstrip('.')
+            # extracted_data[filename] = extract_text(file_path)
+            packet = create_data_packet(filename, ext, extract_text(file_path))
+            final_data.append(packet)
+            log_message(f"Extraction complete for {filename}")
+        except Exception as e:
+            return str(e)
+    print(final_data)
+    return final_data
 
 
 def extract_text(file_path):
@@ -21,6 +38,14 @@ def extract_text(file_path):
     elif file_path.endswith(('.png', '.jpg', '.jpeg')):
         return extract_image(file_path)
     return None
+
+
+def create_data_packet(file_name, file_type, file_content):
+    data_packet = {}
+    data_packet["file_name"] = file_name
+    data_packet["file_type"] = file_type
+    data_packet["content"] = file_content
+    return data_packet
 
 
 def extract_pdf(file_path, text=None):

@@ -9,8 +9,13 @@ pytesseract==0.3.7
 setuptools
 openpyxl
 pandas
+numpy
 gunicorn==20.1.0
 pdf2image
 PyMuPDF
 PyPDF2
+tenacity
+vertexai
+pathlib
+tiktoken
 ##Pillow==8.2.0  # For image processing
